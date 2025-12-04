@@ -220,57 +220,56 @@ Use the image composition capabilities of matplotlib (Python) or imager (R) to a
 #| fig-height: 3
 #| dpi: 300
 
-# Rotate all images 180 degrees (flip both rows and columns)
-# Each array may have different dimensions, so rotate each using its own dimensions
-original_array_rotated <- original_array[nrow(original_array):1, ncol(original_array):1, drop = FALSE]
-stipple_array_rotated <- stipple_array[nrow(stipple_array):1, ncol(stipple_array):1, drop = FALSE]
-s_array_rotated <- s_array[nrow(s_array):1, ncol(s_array):1, drop = FALSE]
+# Flip images only vertically so they are upright
+original_plot <- original_array[nrow(original_array):1, , drop = FALSE]
+stipple_plot  <- stipple_array[nrow(stipple_array):1, , drop = FALSE]
+s_plot        <- s_array[nrow(s_array):1, , drop = FALSE]
 
-# Check if masked_stipple is valid before rotating
-if (exists("masked_stipple") && !is.null(masked_stipple) && length(dim(masked_stipple)) == 2 && 
-    nrow(masked_stipple) > 0 && ncol(masked_stipple) > 0) {
-  masked_stipple_rotated <- masked_stipple[nrow(masked_stipple):1, ncol(masked_stipple):1, drop = FALSE]
-} else {
-  # If masked_stipple is invalid, recreate it from rotated arrays
-  s_mask_rotated <- s_array_rotated < 0.5
-  masked_stipple_rotated <- stipple_array_rotated
-  masked_stipple_rotated[s_mask_rotated] <- 1.0
-}
+# Build the masked estimate in the same orientation
+# Black parts of S = selection bias region
+s_mask <- s_plot < 0.5
 
-# Get dimensions for display (use original_array dimensions)
-h <- nrow(original_array_rotated)
-w <- ncol(original_array_rotated)
+# Start from the stippled image and remove dots inside the S
+estimate_plot <- stipple_plot
+estimate_plot[s_mask] <- 1.0   # set masked areas to white
+
+# Get dimensions for display (use original_plot dimensions)
+h <- nrow(original_plot)
+w <- ncol(original_plot)
 
 # Set up 1x4 layout with minimal spacing
-par(mfrow = c(1, 4), mar = c(2, 1, 3, 1), bg = "pink", oma = c(0, 0, 0, 0))
+par(mfrow = c(1, 4),
+    mar = c(2, 1, 3, 1),
+    bg  = "pink",
+    oma = c(0, 0, 0, 0))
 
 # Panel 1: Reality (original image)
-image(t(original_array_rotated), 
-      col = gray(seq(0, 1, length.out = 256)),
+image(t(original_plot), 
+      col  = gray(seq(0, 1, length.out = 256)),
       xlab = "", ylab = "", axes = FALSE, 
       main = "Reality", 
-      asp = h/w)
+      asp  = h / w)
 
 # Panel 2: Your Model (stippled image)
-image(t(stipple_array_rotated), 
-      col = gray(seq(0, 1, length.out = 256)),
+image(t(stipple_plot), 
+      col  = gray(seq(0, 1, length.out = 256)),
       xlab = "", ylab = "", axes = FALSE, 
       main = "Your Model", 
-      asp = h/w)
+      asp  = h / w)
 
 # Panel 3: Selection Bias (S letter)
-image(t(s_array_rotated), 
-      col = gray(seq(0, 1, length.out = 256)),
+image(t(s_plot), 
+      col  = gray(seq(0, 1, length.out = 256)),
       xlab = "", ylab = "", axes = FALSE, 
       main = "Selection Bias", 
-      asp = h/w)
+      asp  = h / w)
 
 # Panel 4: Estimate (masked stippled image)
-image(t(masked_stipple_rotated), 
-      col = gray(seq(0, 1, length.out = 256)),
+image(t(estimate_plot), 
+      col  = gray(seq(0, 1, length.out = 256)),
       xlab = "", ylab = "", axes = FALSE, 
       main = "Estimate", 
-      asp = h/w)
+      asp  = h / w)
 ```
 
 ## Tips for Success
