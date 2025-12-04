@@ -8,13 +8,6 @@ execute:
   eval: true
 ---
 
-# 🎨 Selection Bias & Missing Data Challenge - Part 2
-
-::: {.callout-important}
-
-### Step 1: Load Your Images
-
-::: {.panel-tabset}
 
 ### Python
 
